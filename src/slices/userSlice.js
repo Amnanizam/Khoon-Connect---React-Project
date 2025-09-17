@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-const userSlice = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+const userSlice = createSlice({
+    name:'user',
+    initialState:{
+        analytics:0,
+        name:'user',
+    },
+    reducers:{}
+})
 
-export default userSlice
+export default userSlice.reducer

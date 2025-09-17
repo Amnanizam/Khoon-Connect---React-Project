@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-const authSlice = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+const authSlice = createSlice({
+    name:'authentication',
+    initialState:{
+        analytics:0,
+        name:'authentication',
+    },
+    reducers:{}
+})
 
-export default authSlice
+export default authSlice.reducer

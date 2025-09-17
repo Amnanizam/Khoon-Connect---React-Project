@@ -1,11 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-const requestSlice = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
-
-export default requestSlice
+const requestSlice = createSlice({
+    name:'request',
+    initialState:{},
+    reducers:{}
+})
+export default requestSlice.reducer

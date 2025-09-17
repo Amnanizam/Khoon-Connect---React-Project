@@ -12,6 +12,7 @@ import ManageRequests from './Pages/ManageRequests'
 import History from './Pages/History'
 import Notifications from './Pages/Notifications'
 import Analytics from './Pages/Analytics'
+import Home from './Pages/Home'
 
 function App() {
   const router = createBrowserRouter([
@@ -23,7 +24,7 @@ function App() {
       path: "/",
       element: (
         <ProtectedRoute>
-          <Dashboard />
+          <Home/>
         </ProtectedRoute>
       ),
     },
