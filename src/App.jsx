@@ -1,5 +1,5 @@
 import './App.css'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import ProtectedRoute from './Components/Routes/ProtectedRoutes'
 import Register from './Pages/Register'
 import Login from './Pages/Login'

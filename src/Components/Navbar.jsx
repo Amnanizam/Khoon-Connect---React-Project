@@ -1,48 +1,75 @@
-import { Navigate } from "react-router";
-import { Menu, Button } from "antd";
+// src/Components/Navbar.jsx
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { Menu } from "antd";
+import { logout } from "../slices/authSlice";
+import logo from '../assets/logo.png'
 
 const Navbar = () => {
+  const { isLoggedIn, role } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleClick = (path) => {
+    navigate(path);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
+
   return (
-    <div className="bg-red-600 shadow-md">
-      <div className="container mx-auto flex justify-between items-center px-6 py-3">
+    <div className="shadow-md bg-red-200">
+      <div className="container mx-auto flex justify-between items-center p-4">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-white">
-          Khoon <span className="text-yellow-300">Connect</span>
-        </Link>
+        <span
+          className="text-xl font-bold text-red-600 cursor-pointer"
+          onClick={() => handleClick("/")}
+        >
+        
+        <img src={logo} alt="" className="w-20 h-15"/>
+        
+        </span>
 
         {/* Menu */}
-        <Menu
-          mode="horizontal"
-          theme="dark"
-          className="bg-red-600 border-none hidden md:flex"
-        >
-          <Menu.Item key="1">
-            <Link to="/">Home</Link>
-          </Menu.Item>
-          <Menu.Item key="2">
-            <Link to="/findblood">Find Blood</Link>
-          </Menu.Item>
-          <Menu.Item key="3">
-            <Link to="/requestblood">Request Blood</Link>
-          </Menu.Item>
-          <Menu.Item key="4">
-            <Link to="/events">Events</Link>
-          </Menu.Item>
+        <Menu mode="horizontal" selectable={false} 
+        className="border-0 bg-red-20">
+          {!isLoggedIn ? (
+            <>
+              <Menu.Item key="home" 
+              className="!bg-red-300 hover:!bg-red-400"
+              onClick={() => handleClick("/")}>
+                Home
+              </Menu.Item>
+              <Menu.Item key="Find Blood" 
+              className="!bg-red-300 hover:!bg-red-400"
+              onClick={() => handleClick("/FindBlood")}>
+                Login
+              </Menu.Item>
+              <Menu.Item key="Donate" 
+              className="!bg-red-300 hover:!bg-red-400"
+              onClick={() => handleClick("/RequestBlood")}>
+                Register
+              </Menu.Item>
+            </>
+          ) : (
+            <>
+              <Menu.Item key="dashboard" onClick={() => handleClick("/dashboard")}>
+                Dashboard
+              </Menu.Item>
+              <Menu.Item key="findblood" onClick={() => handleClick("/findblood")}>
+                Find Blood
+              </Menu.Item>
+              <Menu.Item key="requestblood" onClick={() => handleClick("/requestblood")}>
+                Request Blood
+              </Menu.Item>
+              <Menu.Item key="logout" onClick={handleLogout}>
+                Logout ({role})
+              </Menu.Item>
+            </>
+          )}
         </Menu>
-
-        {/* Auth buttons */}
-        <div className="space-x-2">
-          <Link to="/login">
-            <Button type="default" className="text-red-600">
-              Login
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button type="primary" className="bg-yellow-400 text-red-900 border-none">
-              Register
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );
