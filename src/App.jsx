@@ -7,7 +7,6 @@ import Dashboard from './Pages/Dashboard'
 import Profile from './Pages/Profile'
 import FindBlood from './Pages/FindBlood'
 import RequestBlood from './Pages/RequestBlood'
-import Events from './Pages/Events'
 import ManageRequests from './Pages/ManageRequests'
 import History from './Pages/History'
 import Notifications from './Pages/Notifications'
@@ -57,14 +56,6 @@ function App() {
       element: (
         <ProtectedRoute>
           <RequestBlood />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/events",
-      element: (
-        <ProtectedRoute>
-          <Events />
         </ProtectedRoute>
       ),
     },
