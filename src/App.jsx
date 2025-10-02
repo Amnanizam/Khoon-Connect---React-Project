@@ -34,6 +34,17 @@ function App() {
           <Dashboard />
         </ProtectedRoute>
       ),
+      children: [
+    { path: "request", element: <RequestBlood /> }, 
+    { path: "history", element: <History /> }, 
+    { path: "notifications", element: <Notifications /> }, 
+    { path: "requests", element: <FindBlood /> }, 
+    { path: "donations", element: <History /> }, 
+    { path: "manage-requests", element: <ManageRequests /> }, 
+    { path: "inventory", element: <Inventory /> }, 
+    { path: "users", element: <ManageUsers /> }, 
+    { path: "analytics", element: <Analytics /> },
+  ],
     },
     {
       path: "/profile",

@@ -1,9 +1,9 @@
-// src/slices/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoggedIn: false,
-  role: null, // "user", "donor", or "patient"
+  role: null, // "admin" | "donor" | "patient" | "bloodbank"
+  user: null, // { name, email, ... }
 };
 
 const authSlice = createSlice({
@@ -12,11 +12,13 @@ const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       state.isLoggedIn = true;
-      state.role = action.payload; // role passed in
+      state.role = action.payload.role;
+      state.user = action.payload.user;
     },
     logout: (state) => {
       state.isLoggedIn = false;
       state.role = null;
+      state.user = null;
     },
   },
 });
