@@ -15,6 +15,11 @@ const requestsSlice = createSlice({
       const { id, status } = action.payload;
       const req = state.requests.find((r) => r.id === id);
       if (req) req.status = status;
+
+      if (req) {
+        req.status = action.payload.status;
+        if (action.payload.donor) req.donor = action.payload.donor;
+      }
     },
     deleteRequest: (state, action) => {
       state.requests = state.requests.filter((r) => r.id !== action.payload);
