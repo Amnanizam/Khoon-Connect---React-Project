@@ -1,125 +1,115 @@
-// src/pages/FindBlood.jsx
-import React, { useMemo, useState } from "react";
-import { Table, Button, Card, Typography, Select, Form, Row, Col, message, Tag } from "antd";
-import NavbarDashboard from "../Components/NavbarDashboard";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Table, Button, Card, Typography, message, Tag } from "antd";
 import { updateRequestStatus } from "../redux/slices/requestsSlice";
-import { addDonation } from "../redux/slices/donationsSlice";
 import { addNotification } from "../redux/slices/notificationsSlice";
 
 const { Title } = Typography;
-const { Option } = Select;
 
-export default function FindBlood() {
+const FindBlood = () => {
   const dispatch = useDispatch();
-  const { requests } = useSelector((state) => state.requests);
   const { user } = useSelector((state) => state.auth);
-  const [filterForm] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const { requests } = useSelector((state) => state.requests);
 
-  // default show only pending requests
-  const [filters, setFilters] = useState({ bloodGroup: null, hospital: "" });
+  // Check the role from Redux (only donors can see this page)
+  const role = user?.role;
 
-  const filtered = useMemo(() => {
-    return requests.filter((r) => {
-      if (r.status !== "pending") return false;
-      if (filters.bloodGroup && r.bloodGroup !== filters.bloodGroup) return false;
-      if (filters.hospital && !r.hospital.toLowerCase().includes(filters.hospital.toLowerCase())) return false;
-      return true;
-    });
-  }, [requests, filters]);
+  if (role !== "donor") {
+    return (
+      <div className="flex justify-center items-center h-screen text-xl text-red-600 font-semibold">
+        ❌ Access Denied – Only donors can view and manage blood requests.
+      </div>
+    );
+  }
 
+  // Filter only pending requests
+  const pendingRequests = requests.filter((req) => req.status === "pending");
+
+  // Function to accept a blood request
   const handleAccept = (record) => {
-    setLoading(true);
-    // mark request approved & record donor
-    dispatch(updateRequestStatus({ id: record.id, status: "approved", donor: user?.name }));
-    // add donation record
-    dispatch(addDonation({
-      id: Date.now(),
-      donor: user?.name,
-      patientName: record.patientName,
-      bloodGroup: record.bloodGroup,
-      date: new Date().toISOString().split("T")[0],
-      hospital: record.hospital,
-    }));
-    // notify patient
-    dispatch(addNotification({
-      id: Date.now(),
-      message: `${user?.name} has accepted your request for ${record.bloodGroup}.`,
-      type: "info",
-      read: false
-    }));
-    message.success("You accepted the request. Please contact the patient/hospital.");
-    setLoading(false);
+    dispatch(updateRequestStatus({ id: record.id, status: "accepted" }));
+    dispatch(
+      addNotification({
+        id: Date.now(),
+        message: `You accepted a blood request for ${record.bloodGroup}.`,
+        type: "success",
+        read: false,
+      })
+    );
+    message.success(`Request for ${record.bloodGroup} accepted successfully!`);
   };
 
+  // Define table columns
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id", width: 90 },
-    { title: "Patient", dataIndex: "patientName", key: "patientName" },
-    { title: "Blood Group", dataIndex: "bloodGroup", key: "bloodGroup" },
-    { title: "Hospital", dataIndex: "hospital", key: "hospital" },
-    { title: "Urgency", dataIndex: "urgency", key: "urgency", render: (u) => <Tag color={u === "Urgent" ? "red" : "blue"}>{u}</Tag> },
-    { title: "Date", dataIndex: "date", key: "date" },
     {
-      title: "Action", key: "action", render: (_, record) => (
-        <Button type="primary" className="bg-red-500" loading={loading} onClick={() => handleAccept(record)}>
+      title: "Patient Name",
+      dataIndex: "patientName",
+      key: "patientName",
+      render: (text) => <span className="font-semibold">{text}</span>,
+    },
+    {
+      title: "Blood Group",
+      dataIndex: "bloodGroup",
+      key: "bloodGroup",
+      render: (text) => <Tag color="red">{text}</Tag>,
+    },
+    {
+      title: "Hospital / Location",
+      dataIndex: "hospital",
+      key: "hospital",
+    },
+    {
+      title: "Urgency",
+      dataIndex: "urgency",
+      key: "urgency",
+      render: (text) => (
+        <Tag color={text === "Urgent" ? "volcano" : "geekblue"}>{text}</Tag>
+      ),
+    },
+    {
+      title: "Required Date",
+      dataIndex: "date",
+      key: "date",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          className="bg-red-500"
+          onClick={() => handleAccept(record)}
+        >
           Accept
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
-  const onFilter = (values) => {
-    setFilters({ bloodGroup: values.bloodGroup || null, hospital: values.hospital || "" });
-  };
-
   return (
-    <div>
-      <NavbarDashboard />
-      <div className="p-6">
-        <Card className="shadow-lg rounded-lg">
-          <Title level={3} className="text-red-600">Find Blood Requests</Title>
-
-          <Form form={filterForm} layout="inline" onFinish={onFilter} className="mb-4">
-            <Row gutter={12} className="w-full">
-              <Col xs={24} sm={10}>
-                <Form.Item name="bloodGroup">
-                  <Select placeholder="Filter by blood group" allowClear className="w-full">
-                    <Option value="A+">A+</Option>
-                    <Option value="A-">A-</Option>
-                    <Option value="B+">B+</Option>
-                    <Option value="B-">B-</Option>
-                    <Option value="AB+">AB+</Option>
-                    <Option value="AB-">AB-</Option>
-                    <Option value="O+">O+</Option>
-                    <Option value="O-">O-</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={10}>
-                <Form.Item name="hospital">
-                  <input placeholder="Search by hospital" className="w-full border rounded px-3 py-2" />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={4}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit" className="bg-red-500">Filter</Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-5xl shadow-lg rounded-2xl !bg-white p-6">
+        <Title
+          level={3}
+          className="text-center mb-6 text-red-500 font-semibold uppercase"
+        >
+          Find Blood Requests
+        </Title>
+        {pendingRequests.length > 0 ? (
           <Table
+            dataSource={pendingRequests}
             columns={columns}
-            dataSource={filtered}
             rowKey="id"
-            pagination={{ pageSize: 6 }}
-            locale={{ emptyText: "No pending requests found." }}
+            pagination={{ pageSize: 5 }}
           />
-        </Card>
-      </div>
+        ) : (
+          <div className="text-center text-gray-600 mt-10">
+            No pending blood requests available at the moment.
+          </div>
+        )}
+      </Card>
     </div>
   );
-}
+};
+
+export default FindBlood;

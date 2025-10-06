@@ -1,120 +1,139 @@
-import React from "react";
-import { Layout, Menu, Typography } from "antd";
-import { useSelector } from "react-redux";
-import { useNavigate, Outlet } from "react-router-dom";
+import React, { useState } from "react";
+import { Layout, Menu, Button, Dropdown } from "antd";
 import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   UserOutlined,
   DashboardOutlined,
   HistoryOutlined,
-  NotificationOutlined,
+  BellOutlined,
   TeamOutlined,
   BankOutlined,
-  FundOutlined,
-  FormOutlined,
-  SearchOutlined,
+  BarChartOutlined,
+  LogoutOutlined,
+  HeartOutlined,
+  FileAddOutlined,
 } from "@ant-design/icons";
-import NavbarDashboard from "../Components/NavbarDashboard";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice"; // make sure you have this action
 
-const { Sider, Content } = Layout;
-const { Title } = Typography;
-
-// Role → menu mapping
-const roleMenus = {
-  admin: [
-    { key: "dashboard", 
-      label: "Dashboard", path: "/Dashboard", icon: <DashboardOutlined /> },
-    { key: "manageRequests", 
-      label: "Manage Requests", path: "/ManageRequests", icon: <FormOutlined /> },
-    { key: "manageUsers", 
-      label: "Manage Users", path: "/ManageUsers", icon: <TeamOutlined /> },
-    { key: "manageBloodbanks", 
-      label: "Manage Bloodbanks", path: "ManageBloodBanks", icon: <BankOutlined /> },
-    { key: "analytics", 
-      label: "Analytics", path: "/Analytics", icon: <FundOutlined /> },
-    { key: "notifications", 
-      label: "Notifications", path: "/Notifications", icon: <NotificationOutlined /> },
-  ],
-  patient: [
-    { key: "dashboard", 
-      label: "Dashboard", path: "/Dashboard", icon: <DashboardOutlined /> },
-    { key: "requestBlood", 
-      label: "Request Blood", path: "/RequestBlood", icon: <FormOutlined /> },
-    { key: "history", 
-      label: "History", path: "/History", icon: <HistoryOutlined /> },
-    { key: "notifications", 
-      label: "Notifications", path: "/Notifications", icon: <NotificationOutlined /> },
-    { key: "profile", 
-      label: "Profile", path: "/Profile", icon: <UserOutlined /> },
-  ],
-  donor: [
-    { key: "dashboard", 
-      label: "Dashboard", path: "/Dashboard", icon: <DashboardOutlined /> },
-    { key: "findBlood", 
-      label: "Find Blood", path: "/FindBlood", icon: <SearchOutlined /> },
-    { key: "history", 
-      label: "History", path: "/History", icon: <HistoryOutlined /> },
-    { key: "notifications", 
-      label: "Notifications", path: "/Notifications", icon: <NotificationOutlined /> },
-    { key: "profile", 
-      label: "Profile", path: "/Profile", icon: <UserOutlined /> },
-  ],
-  bloodbank: [
-    { key: "dashboard", 
-      label: "Dashboard", path: "/Dashboard", icon: <DashboardOutlined /> },
-    { key: "manageRequests", 
-      label: "Manage Requests", path: "/ManageRequests", icon: <FormOutlined /> },
-    { key: "manageBloodbanks", 
-      label: "Manage Bloodbanks", path: "/ManageBloodBanks", icon: <BankOutlined /> },
-    { key: "notifications", 
-      label: "Notifications", path: "/Notifications", icon: <NotificationOutlined /> },
-  ],
-};
+const { Header, Sider, Content } = Layout;
 
 const Dashboard = () => {
-  const { role } = useSelector((state) => state.auth);
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { role, user } = useSelector((state) => state.auth);
 
-  const menus = roleMenus[role] || [];
+  // 🔹 Sidebar menu items based on user role
+  const roleMenu = {
+    admin: [
+      { key: "1", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "2", label: "Manage Requests", icon: <FileAddOutlined />, path: "/dashboard/manage-requests" },
+      { key: "3", label: "Manage Users", icon: <TeamOutlined />, path: "/dashboard/manage-users" },
+      { key: "4", label: "Manage Bloodbanks", icon: <BankOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "5", label: "Analytics", icon: <BarChartOutlined />, path: "/dashboard/analytics" },
+      { key: "6", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
+    ],
+    donor: [
+      { key: "1", label: "Find Blood", icon: <HeartOutlined />, path: "/dashboard/find-blood" },
+      { key: "2", label: "History", icon: <HistoryOutlined />, path: "/dashboard/history" },
+      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
+      { key: "4", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
+    ],
+    patient: [
+      { key: "1", label: "Request Blood", icon: <FileAddOutlined />, path: "/dashboard/request-blood" },
+      { key: "2", label: "History", icon: <HistoryOutlined />, path: "/dashboard/history" },
+      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
+      { key: "4", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
+    ],
+    bloodbank: [
+      { key: "1", label: "Manage Requests", icon: <FileAddOutlined />, path: "/dashboard/manage-requests" },
+      { key: "2", label: "Manage Bloodbanks", icon: <BankOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
+    ],
+  };
 
-  const handleClick = ({ key }) => {
-    const menu = menus.find((m) => m.key === key);
-    if (menu) navigate(menu.path);
+  const items = roleMenu[role] || [];
+
+  // 🔹 Dropdown for user info (top-right)
+  const userMenu = {
+    items: [
+      {
+        key: "1",
+        label: <span onClick={() => navigate("/dashboard/profile")}>Profile</span>,
+      },
+      {
+        key: "2",
+        label: (
+          <span
+            onClick={() => {
+              dispatch(logout());
+              navigate("/login");
+            }}
+          >
+            Logout
+          </span>
+        ),
+      },
+    ],
   };
 
   return (
     <Layout className="min-h-screen">
-      {/* Navbar at top */}
-      <Layout>
-        <NavbarDashboard />
-      </Layout>
+      {/* Sidebar */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        className="bg-red-600"
+      >
+        <div className="text-white text-center text-xl font-bold py-4">
+          {collapsed ? "KC" : "Khoon Connect"}
+        </div>
+        <Menu
+          theme="dark"
+          mode="inline"
+          className="bg-red-600"
+          items={items.map((item) => ({
+            key: item.key,
+            icon: item.icon,
+            label: (
+              <span
+                className="cursor-pointer"
+                onClick={() => navigate(item.path)}
+              >
+                {item.label}
+              </span>
+            ),
+          }))}
+        />
+      </Sider>
 
-      {/* Sidebar + Content */}
+      {/* Main Layout */}
       <Layout>
-        <Sider width={220} className="bg-white shadow-md">
-          <div className="p-4">
-            <Title level={4} className="text-center text-red-500">
-              {role?.toUpperCase()} PANEL
-            </Title>
-          </div>
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={["dashboard"]}
-            style={{ height: "100%" }}
-            items={menus.map((item) => ({
-              key: item.key,
-              icon: item.icon,
-              label: item.label,
-            }))}
-            onClick={handleClick}
+        {/* Header */}
+        <Header className="flex justify-between items-center px-4 bg-white shadow">
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
           />
-        </Sider>
+          <div className="flex items-center space-x-4">
+            <span className="text-gray-700 font-medium">
+              {user?.name || "User"} ({role})
+            </span>
+            <Dropdown menu={userMenu} placement="bottomRight">
+              <Button shape="circle" icon={<UserOutlined />} />
+            </Dropdown>
+          </div>
+        </Header>
 
-        <Layout className="p-4 bg-gray-50">
-          <Content className="bg-white rounded-lg shadow p-6">
-            {/* This is where pages load */}
-            <Outlet />
-          </Content>
-        </Layout>
+        {/* Content */}
+        <Content className="m-4 p-6 bg-white shadow rounded-lg">
+          <Outlet />
+        </Content>
       </Layout>
     </Layout>
   );

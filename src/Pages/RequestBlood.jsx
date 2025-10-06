@@ -10,6 +10,7 @@ const { Option } = Select;
 const RequestBlood = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const [form] = Form.useForm();
 
   const onFinish = (values) => {
     const newRequest = {
@@ -28,11 +29,13 @@ const RequestBlood = () => {
         id: Date.now(),
         message: `Blood request submitted for ${values.bloodGroup}`,
         type: "info",
+        role: "patient", // ✅ ensures it’s visible only for patient notifications
         read: false,
       })
     );
 
     message.success("Your blood request has been submitted!");
+    form.resetFields();
   };
 
   const onFinishFailed = () => {
@@ -40,12 +43,13 @@ const RequestBlood = () => {
   };
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-2xl shadow-lg rounded-2xl !bg-white">
         <Title level={3} className="text-center mb-4 text-red-500">
           Request Blood
         </Title>
         <Form
+          form={form}
           layout="vertical"
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
