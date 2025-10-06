@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Form, Input, Select, DatePicker, Button, Card, Typography, message } from "antd";
-import { addRequest } from "../redux/slices/requestsSlice";
-import { addNotification } from "../redux/slices/notificationsSlice";
+import { addRequest } from "../slices/requestsSlice";
+import { addNotification } from "../slices/notificationsSlice";
 
 const { Title } = Typography;
 const { Option } = Select;

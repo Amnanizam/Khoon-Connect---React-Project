@@ -1,141 +1,176 @@
-import React, { useState } from "react";
-import { Layout, Menu, Button, Dropdown } from "antd";
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UserOutlined,
-  DashboardOutlined,
-  HistoryOutlined,
-  BellOutlined,
-  TeamOutlined,
-  BankOutlined,
-  BarChartOutlined,
-  LogoutOutlined,
-  HeartOutlined,
-  FileAddOutlined,
-} from "@ant-design/icons";
-import { Outlet, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../redux/slices/authSlice"; // make sure you have this action
-
-const { Header, Sider, Content } = Layout;
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Card, Row, Col, message, Statistic } from "antd";
+import NavbarDashboard from "../Components/NavbarDashboard";
+import { updateAnalytics } from "../slices/analyticsSlice";
 
 const Dashboard = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { role, user } = useSelector((state) => state.auth);
+  const { user, role } = useSelector((state) => state.auth);
+  const analytics = useSelector((state) => state.analytics);
+  const notifications = useSelector((state) => state.notifications.notifications);
 
-  // 🔹 Sidebar menu items based on user role
-  const roleMenu = {
-    admin: [
-      { key: "1", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "2", label: "Manage Requests", icon: <FileAddOutlined />, path: "/dashboard/manage-requests" },
-      { key: "3", label: "Manage Users", icon: <TeamOutlined />, path: "/dashboard/manage-users" },
-      { key: "4", label: "Manage Bloodbanks", icon: <BankOutlined />, path: "/dashboard/manage-bloodbanks" },
-      { key: "5", label: "Analytics", icon: <BarChartOutlined />, path: "/dashboard/analytics" },
-      { key: "6", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
-    ],
-    donor: [
-      { key: "1", label: "Find Blood", icon: <HeartOutlined />, path: "/dashboard/find-blood" },
-      { key: "2", label: "History", icon: <HistoryOutlined />, path: "/dashboard/history" },
-      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
-      { key: "4", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
-    ],
-    patient: [
-      { key: "1", label: "Request Blood", icon: <FileAddOutlined />, path: "/dashboard/request-blood" },
-      { key: "2", label: "History", icon: <HistoryOutlined />, path: "/dashboard/history" },
-      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
-      { key: "4", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
-    ],
-    bloodbank: [
-      { key: "1", label: "Manage Requests", icon: <FileAddOutlined />, path: "/dashboard/manage-requests" },
-      { key: "2", label: "Manage Bloodbanks", icon: <BankOutlined />, path: "/dashboard/manage-bloodbanks" },
-      { key: "3", label: "Notifications", icon: <BellOutlined />, path: "/dashboard/notifications" },
-    ],
-  };
+  useEffect(() => {
+    // Welcome notification on dashboard load
+    if (user?.name) {
+      message.success(`Welcome back, ${user.name}!`, 2);
+    }
 
-  const items = roleMenu[role] || [];
+    // Auto sync analytics if empty
+    if (!analytics.totalRequests) {
+      dispatch(
+        updateAnalytics({
+          ...analytics,
+          totalRequests: 10,
+          fulfilledRequests: 6,
+          donorsCount: 15,
+          patientsCount: 9,
+        })
+      );
+    }
+  }, [dispatch, user]);
 
-  // 🔹 Dropdown for user info (top-right)
-  const userMenu = {
-    items: [
-      {
-        key: "1",
-        label: <span onClick={() => navigate("/dashboard/profile")}>Profile</span>,
-      },
-      {
-        key: "2",
-        label: (
-          <span
-            onClick={() => {
-              dispatch(logout());
-              navigate("/login");
-            }}
+  // 🩸 Role-based content
+  const renderRoleContent = () => {
+    switch (role) {
+      case "admin":
+        return (
+          <Row gutter={[16, 16]} justify="center" className="mt-6">
+            <Col xs={24} sm={12} md={6}>
+              <Card bordered className="shadow-md">
+                <Statistic
+                  title="Total Requests"
+                  value={analytics.totalRequests}
+                  valueStyle={{ color: "#cf1322" }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card bordered className="shadow-md">
+                <Statistic
+                  title="Fulfilled Requests"
+                  value={analytics.fulfilledRequests}
+                  valueStyle={{ color: "#3f8600" }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card bordered className="shadow-md">
+                <Statistic
+                  title="Total Donors"
+                  value={analytics.donorsCount}
+                  valueStyle={{ color: "#1890ff" }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card bordered className="shadow-md">
+                <Statistic
+                  title="Total Patients"
+                  value={analytics.patientsCount}
+                  valueStyle={{ color: "#722ed1" }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        );
+
+      case "donor":
+        return (
+          <Card
+            title="Donor Dashboard"
+            className="shadow-lg mt-8 max-w-3xl mx-auto text-center !bg-white"
           >
-            Logout
-          </span>
-        ),
-      },
-    ],
+            <p className="text-gray-600">
+              Thank you for being a lifesaver ❤️ <br />
+              You have donated <b>{analytics.fulfilledRequests}</b> times.
+            </p>
+          </Card>
+        );
+
+      case "patient":
+        return (
+          <Card
+            title="Patient Dashboard"
+            className="shadow-lg mt-8 max-w-3xl mx-auto text-center !bg-white"
+          >
+            <p className="text-gray-600">
+              Your recent requests: <b>{analytics.totalRequests}</b>
+            </p>
+            <p>
+              Fulfilled so far:{" "}
+              <b className="text-green-600">{analytics.fulfilledRequests}</b>
+            </p>
+          </Card>
+        );
+
+      case "bloodbank":
+        return (
+          <Card
+            title="Blood Bank Dashboard"
+            className="shadow-lg mt-8 max-w-4xl mx-auto text-center !bg-white"
+          >
+            <p className="text-gray-600 mb-2">
+              Monitor your inventory and fulfill pending requests efficiently.
+            </p>
+            <Row gutter={[16, 16]} justify="center">
+              {Object.entries(analytics.bloodInventory).map(([group, units]) => (
+                <Col xs={12} sm={8} md={6} key={group}>
+                  <Card size="small" className="text-center shadow">
+                    <p className="font-bold text-lg text-red-600">{group}</p>
+                    <p>{units} units</p>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Card>
+        );
+
+      default:
+        return (
+          <Card className="text-center mt-8 max-w-lg mx-auto !bg-white shadow-md">
+            <p>No role data available. Please log in again.</p>
+          </Card>
+        );
+    }
   };
+
+  // 🔔 Recent Notifications section
+  const renderNotifications = () => (
+    <Card
+      title="Recent Notifications"
+      className="mt-10 max-w-3xl mx-auto shadow-md !bg-white"
+    >
+      {notifications.length > 0 ? (
+        notifications.slice(0, 5).map((note) => (
+          <div
+            key={note.id}
+            className="border-b border-gray-200 py-2 text-gray-700"
+          >
+            • {note.message}
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-400 italic text-center">
+          No new notifications.
+        </p>
+      )}
+    </Card>
+  );
 
   return (
-    <Layout className="min-h-screen">
-      {/* Sidebar */}
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        className="bg-red-600"
-      >
-        <div className="text-white text-center text-xl font-bold py-4">
-          {collapsed ? "KC" : "Khoon Connect"}
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          className="bg-red-600"
-          items={items.map((item) => ({
-            key: item.key,
-            icon: item.icon,
-            label: (
-              <span
-                className="cursor-pointer"
-                onClick={() => navigate(item.path)}
-              >
-                {item.label}
-              </span>
-            ),
-          }))}
-        />
-      </Sider>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar at top */}
+      <NavbarDashboard />
 
-      {/* Main Layout */}
-      <Layout>
-        {/* Header */}
-        <Header className="flex justify-between items-center px-4 bg-white shadow">
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-          />
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-700 font-medium">
-              {user?.name || "User"} ({role})
-            </span>
-            <Dropdown menu={userMenu} placement="bottomRight">
-              <Button shape="circle" icon={<UserOutlined />} />
-            </Dropdown>
-          </div>
-        </Header>
-
-        {/* Content */}
-        <Content className="m-4 p-6 bg-white shadow rounded-lg">
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold text-center text-red-600 mb-6">
+          Dashboard
+        </h1>
+        {renderRoleContent()}
+        {renderNotifications()}
+      </div>
+    </div>
   );
 };
 

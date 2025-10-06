@@ -1,73 +1,124 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { List, Button, Tag, message } from "antd";
-import { markAsRead, clearNotifications } from "../redux/slices/notificationsSlice";
+import {
+  List,
+  Card,
+  Typography,
+  Tag,
+  Button,
+  message,
+  Popconfirm,
+  Empty,
+} from "antd";
+import {
+  markAsRead,
+  clearNotifications,
+} from "../slices/notificationsSlice";
+
+const { Title, Text } = Typography;
 
 const Notifications = () => {
   const dispatch = useDispatch();
   const { notifications } = useSelector((state) => state.notifications);
-  const { role } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
-  // Filter notifications based on role
-  const roleNotifications = notifications.filter((n) => n.role === role);
+  const userRole = user?.role;
 
+  // ✅ Filter notifications for the current role
+  const roleNotifications = notifications.filter(
+    (n) => !n.role || n.role === userRole
+  );
+
+  // ✅ Handle mark as read
   const handleMarkAsRead = (id) => {
     dispatch(markAsRead(id));
-    message.success("Marked as read!");
+    message.success("Notification marked as read.");
   };
 
-  const handleClear = () => {
-    dispatch(clearNotifications(role));
-    message.info("All notifications cleared for your role!");
+  // ✅ Handle clear all
+  const handleClearAll = () => {
+    dispatch(clearNotifications());
+    message.info("All notifications cleared.");
   };
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold text-red-600">Notifications</h1>
-        {roleNotifications.length > 0 && (
-          <Button danger onClick={handleClear}>
-            Clear All
-          </Button>
-        )}
-      </div>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-4xl shadow-lg rounded-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <Title level={3} className="text-red-500">
+            Notifications
+          </Title>
 
-      {roleNotifications.length === 0 ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">No notifications available for your role.</p>
-        </div>
-      ) : (
-        <List
-          itemLayout="horizontal"
-          dataSource={roleNotifications}
-          bordered
-          renderItem={(item) => (
-            <List.Item
-              className={`${
-                item.read ? "bg-white" : "bg-red-50"
-              } transition-all duration-200 rounded-md mb-2 shadow-sm`}
-              actions={[
-                !item.read && (
-                  <Button type="link" onClick={() => handleMarkAsRead(item.id)}>
-                    Mark as read
-                  </Button>
-                ),
-              ]}
+          {roleNotifications.length > 0 && (
+            <Popconfirm
+              title="Clear all notifications?"
+              onConfirm={handleClearAll}
+              okText="Yes"
+              cancelText="No"
             >
-              <List.Item.Meta
-                title={
-                  <div className="flex justify-between">
-                    <span>{item.message}</span>
-                    <Tag color={item.type === "success" ? "green" : "red"}>
-                      {item.type.toUpperCase()}
-                    </Tag>
-                  </div>
-                }
-              />
-            </List.Item>
+              <Button danger type="default">
+                Clear All
+              </Button>
+            </Popconfirm>
           )}
-        />
-      )}
+        </div>
+
+        {roleNotifications.length === 0 ? (
+          <Empty
+            description="No notifications yet"
+            className="text-gray-400 py-10"
+          />
+        ) : (
+          <List
+            itemLayout="horizontal"
+            dataSource={roleNotifications}
+            renderItem={(item) => (
+              <List.Item
+                className={`rounded-lg px-4 py-3 mb-3 shadow-sm border ${
+                  item.read ? "bg-gray-100" : "bg-red-50"
+                }`}
+                actions={[
+                  !item.read && (
+                    <Button
+                      type="link"
+                      onClick={() => handleMarkAsRead(item.id)}
+                      className="text-blue-600"
+                    >
+                      Mark as Read
+                    </Button>
+                  ),
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <div className="flex justify-between items-center">
+                      <Text strong>{item.message}</Text>
+                      <Tag
+                        color={
+                          item.type === "success"
+                            ? "green"
+                            : item.type === "warning"
+                            ? "orange"
+                            : item.type === "info"
+                            ? "blue"
+                            : "default"
+                        }
+                      >
+                        {item.type?.toUpperCase()}
+                      </Tag>
+                    </div>
+                  }
+                  description={
+                    <Text type="secondary">
+                      {new Date(item.id).toLocaleString()}
+                    </Text>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Card>
     </div>
   );
 };

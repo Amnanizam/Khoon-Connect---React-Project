@@ -1,54 +1,143 @@
-import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Table, Card, Typography, Tag, message } from "antd";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Table, Tag, Button, Card, Typography, message } from "antd";
+import { updateRequestStatus } from "../redux/slices/requestsSlice";
+import { addNotification } from "../slices/notificationsSlice";
 
 const { Title } = Typography;
 
 const History = () => {
-  const { requests } = useSelector((state) => state.requests);
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { requests } = useSelector((state) => state.requests);
 
+  const role = user?.role;
+  const isPatient = role === "patient";
+  const isDonor = role === "donor";
+
+  // ✅ Filter data based on role
   const patientRequests = requests.filter(
-    (req) => req.patientName === user?.name
+    (r) => r.patientName === user?.name
+  );
+  const donorRequests = requests.filter(
+    (r) => r.donorName === user?.name
   );
 
-  useEffect(() => {
-    if (patientRequests.length === 0) {
-      message.info("No requests found in your history.");
-    }
-  }, [patientRequests]);
-
-  const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+  // ✅ Columns for patients
+  const patientColumns = [
+    { title: "Request ID", dataIndex: "id", key: "id" },
     { title: "Blood Group", dataIndex: "bloodGroup", key: "bloodGroup" },
     { title: "Hospital", dataIndex: "hospital", key: "hospital" },
-    { title: "Urgency", dataIndex: "urgency", key: "urgency" },
+    {
+      title: "Urgency",
+      dataIndex: "urgency",
+      key: "urgency",
+      render: (urgency) => (
+        <Tag color={urgency === "Urgent" ? "red" : "blue"}>{urgency}</Tag>
+      ),
+    },
     { title: "Date", dataIndex: "date", key: "date" },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
-        let color = "blue";
-        if (status === "approved") color = "green";
-        if (status === "declined") color = "red";
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
+      render: (status) => (
+        <Tag
+          color={
+            status === "pending"
+              ? "orange"
+              : status === "accepted"
+              ? "green"
+              : "gray"
+          }
+        >
+          {status.toUpperCase()}
+        </Tag>
+      ),
     },
   ];
 
+  // ✅ Columns for donors
+  const donorColumns = [
+    { title: "Request ID", dataIndex: "id", key: "id" },
+    { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
+    { title: "Blood Group", dataIndex: "bloodGroup", key: "bloodGroup" },
+    { title: "Hospital", dataIndex: "hospital", key: "hospital" },
+    { title: "Date", dataIndex: "date", key: "date" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag
+          color={
+            status === "pending"
+              ? "orange"
+              : status === "accepted"
+              ? "green"
+              : "gray"
+          }
+        >
+          {status.toUpperCase()}
+        </Tag>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) =>
+        record.status === "pending" ? (
+          <Button
+            type="primary"
+            onClick={() => handleMarkAsDonated(record.id)}
+            className="bg-green-500"
+          >
+            Mark as Donated
+          </Button>
+        ) : (
+          <Tag color="green">Completed</Tag>
+        ),
+    },
+  ];
+
+  // ✅ Handle donor action
+  const handleMarkAsDonated = (id) => {
+    dispatch(updateRequestStatus({ id, status: "donated" }));
+    dispatch(
+      addNotification({
+        id: Date.now(),
+        message: `Donation completed successfully.`,
+        type: "success",
+        read: false,
+      })
+    );
+    message.success("Marked as donated!");
+  };
+
   return (
-    <div className="flex justify-center items-center">
-      <Card className="w-full max-w-5xl shadow-lg rounded-2xl !bg-white">
+    <div className="p-6 flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-5xl shadow-lg rounded-2xl">
         <Title level={3} className="text-center mb-4 text-red-500">
-          My Requests History
+          {isPatient ? "My Blood Request History" : "My Donation History"}
         </Title>
-        <Table
-          columns={columns}
-          dataSource={patientRequests}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-        />
+
+        {isPatient && (
+          <Table
+            dataSource={patientRequests}
+            columns={patientColumns}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+          />
+        )}
+
+        {isDonor && (
+          <Table
+            dataSource={donorRequests}
+            columns={donorColumns}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+          />
+        )}
       </Card>
     </div>
   );

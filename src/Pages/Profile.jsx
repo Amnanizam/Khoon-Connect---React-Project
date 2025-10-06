@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Card, Typography, Form, Input, Button, message } from "antd";
 import NavbarDashboard from "../Components/NavbarDashboard";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUser } from "../redux/slices/usersSlice";
+import { updateUser } from "../slices/usersSlice";
 
 const { Title } = Typography;
 

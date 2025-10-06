@@ -9,7 +9,7 @@ import notificationsReducer from "./slices/notificationsSlice";
 
 const store=configureStore({
     reducer:{
-        
+        analytics: analyticsReducer,
         auth:authReducer,
        requests: requestsReducer,
     donations: donationsReducer,

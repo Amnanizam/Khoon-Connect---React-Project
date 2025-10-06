@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Card, Typography, message, Tag } from "antd";
 import { updateRequestStatus } from "../redux/slices/requestsSlice";
-import { addNotification } from "../redux/slices/notificationsSlice";
+import { addNotification } from "../slices/notificationsSlice";
 
 const { Title } = Typography;
 
