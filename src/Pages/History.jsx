@@ -1,8 +1,10 @@
+// src/pages/History.jsx
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Tag, Button, Card, Typography, message } from "antd";
-import { updateRequestStatus } from "../redux/slices/requestsSlice";
+import { updateRequestStatus } from "../slices/requestsSlice";
 import { addNotification } from "../slices/notificationsSlice";
+import NavbarDashboard from "../Components/NavbarDashboard";
 
 const { Title } = Typography;
 
@@ -14,17 +16,19 @@ const History = () => {
   const role = user?.role;
   const isPatient = role === "patient";
   const isDonor = role === "donor";
+  const isAdmin = role === "admin";
+  const isBloodBank = role === "bloodbank";
 
-  // ✅ Filter data based on role
-  const patientRequests = requests.filter(
-    (r) => r.patientName === user?.name
-  );
-  const donorRequests = requests.filter(
-    (r) => r.donorName === user?.name
-  );
+  // ✅ Filter data by role
+  const filteredRequests =
+    isPatient
+      ? requests.filter((r) => r.patientName === user?.name)
+      : isDonor
+      ? requests.filter((r) => r.donorName === user?.name)
+      : requests; // Admin & BloodBank can view all
 
-  // ✅ Columns for patients
-  const patientColumns = [
+  // ✅ Common columns
+  const baseColumns = [
     { title: "Request ID", dataIndex: "id", key: "id" },
     { title: "Blood Group", dataIndex: "bloodGroup", key: "bloodGroup" },
     { title: "Hospital", dataIndex: "hospital", key: "hospital" },
@@ -32,11 +36,13 @@ const History = () => {
       title: "Urgency",
       dataIndex: "urgency",
       key: "urgency",
-      render: (urgency) => (
-        <Tag color={urgency === "Urgent" ? "red" : "blue"}>{urgency}</Tag>
-      ),
+      render: (urgency) =>
+        urgency ? (
+          <Tag color={urgency === "Urgent" ? "red" : "blue"}>{urgency}</Tag>
+        ) : (
+          "-"
+        ),
     },
-    { title: "Date", dataIndex: "date", key: "date" },
     {
       title: "Status",
       dataIndex: "status",
@@ -47,41 +53,22 @@ const History = () => {
             status === "pending"
               ? "orange"
               : status === "accepted"
+              ? "blue"
+              : status === "donated"
               ? "green"
               : "gray"
           }
         >
-          {status.toUpperCase()}
+          {status?.toUpperCase()}
         </Tag>
       ),
     },
+    { title: "Date", dataIndex: "date", key: "date" },
   ];
 
-  // ✅ Columns for donors
+  // ✅ Add donor action column
   const donorColumns = [
-    { title: "Request ID", dataIndex: "id", key: "id" },
-    { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
-    { title: "Blood Group", dataIndex: "bloodGroup", key: "bloodGroup" },
-    { title: "Hospital", dataIndex: "hospital", key: "hospital" },
-    { title: "Date", dataIndex: "date", key: "date" },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag
-          color={
-            status === "pending"
-              ? "orange"
-              : status === "accepted"
-              ? "green"
-              : "gray"
-          }
-        >
-          {status.toUpperCase()}
-        </Tag>
-      ),
-    },
+    ...baseColumns,
     {
       title: "Action",
       key: "action",
@@ -100,45 +87,69 @@ const History = () => {
     },
   ];
 
-  // ✅ Handle donor action
+  // ✅ Add admin/bloodbank control columns
+  const adminColumns = [
+    ...baseColumns,
+    {
+      title: "Patient Name",
+      dataIndex: "patientName",
+      key: "patientName",
+    },
+    {
+      title: "Donor Name",
+      dataIndex: "donorName",
+      key: "donorName",
+      render: (name) => name || <Tag color="default">Unassigned</Tag>,
+    },
+  ];
+
+  // ✅ Handle donor marking
   const handleMarkAsDonated = (id) => {
     dispatch(updateRequestStatus({ id, status: "donated" }));
     dispatch(
       addNotification({
         id: Date.now(),
-        message: `Donation completed successfully.`,
+        message: `Donation completed successfully!`,
         type: "success",
+        role: "donor",
         read: false,
       })
     );
+
     message.success("Marked as donated!");
   };
 
+  // ✅ Columns per role
+  const columns = isDonor
+    ? donorColumns
+    : isAdmin || isBloodBank
+    ? adminColumns
+    : baseColumns;
+
   return (
-    <div className="p-6 flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-5xl shadow-lg rounded-2xl">
-        <Title level={3} className="text-center mb-4 text-red-500">
-          {isPatient ? "My Blood Request History" : "My Donation History"}
-        </Title>
+    <div className="min-h-screen bg-gray-50">
+      <NavbarDashboard />
+      <div className="p-6 flex justify-center items-start">
+        <Card className="w-full max-w-6xl shadow-lg rounded-2xl">
+          <Title level={3} className="text-center mb-6 text-red-600">
+            {isPatient
+              ? "My Blood Request History"
+              : isDonor
+              ? "My Donation History"
+              : isAdmin
+              ? "All Requests Overview"
+              : "Blood Bank Request Log"}
+          </Title>
 
-        {isPatient && (
           <Table
-            dataSource={patientRequests}
-            columns={patientColumns}
+            dataSource={filteredRequests}
+            columns={columns}
             rowKey="id"
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 6 }}
+            bordered
           />
-        )}
-
-        {isDonor && (
-          <Table
-            dataSource={donorRequests}
-            columns={donorColumns}
-            rowKey="id"
-            pagination={{ pageSize: 5 }}
-          />
-        )}
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

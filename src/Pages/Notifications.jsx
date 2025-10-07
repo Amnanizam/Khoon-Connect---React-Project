@@ -1,3 +1,4 @@
+// src/Pages/Notifications.jsx
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -24,18 +25,18 @@ const Notifications = () => {
 
   const userRole = user?.role;
 
-  // ✅ Filter notifications for the current role
+  // ✅ Filter notifications by user role
   const roleNotifications = notifications.filter(
     (n) => !n.role || n.role === userRole
   );
 
-  // ✅ Handle mark as read
+  // ✅ Mark single notification as read
   const handleMarkAsRead = (id) => {
     dispatch(markAsRead(id));
     message.success("Notification marked as read.");
   };
 
-  // ✅ Handle clear all
+  // ✅ Clear all notifications
   const handleClearAll = () => {
     dispatch(clearNotifications());
     message.info("All notifications cleared.");
@@ -44,6 +45,7 @@ const Notifications = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-4xl shadow-lg rounded-2xl">
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <Title level={3} className="text-red-500">
             Notifications
@@ -63,12 +65,16 @@ const Notifications = () => {
           )}
         </div>
 
+        {/* If no notifications */}
         {roleNotifications.length === 0 ? (
           <Empty
-            description="No notifications yet"
+            description={`No notifications for ${
+              userRole || "this user"
+            }`}
             className="text-gray-400 py-10"
           />
         ) : (
+          // ✅ Notification list
           <List
             itemLayout="horizontal"
             dataSource={roleNotifications}
@@ -104,13 +110,13 @@ const Notifications = () => {
                             : "default"
                         }
                       >
-                        {item.type?.toUpperCase()}
+                        {item.type?.toUpperCase() || "INFO"}
                       </Tag>
                     </div>
                   }
                   description={
                     <Text type="secondary">
-                      {new Date(item.id).toLocaleString()}
+                      {new Date(item.timestamp || item.id).toLocaleString()}
                     </Text>
                   }
                 />
