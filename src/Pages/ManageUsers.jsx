@@ -13,7 +13,7 @@ import {
   Typography,
 } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import { addNotification } from "../slices/notificationsSlice";
+import { addNotification } from "../slices/notificationSlice";
 
 const { Title } = Typography;
 const { Option } = Select;

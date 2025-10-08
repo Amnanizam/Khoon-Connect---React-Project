@@ -14,7 +14,7 @@ import {
 import {
   markAsRead,
   clearNotifications,
-} from "../slices/notificationsSlice";
+} from "../slices/notificationSlice";
 
 const { Title, Text } = Typography;
 

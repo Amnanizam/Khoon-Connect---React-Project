@@ -13,8 +13,8 @@ import {
 import {
   updateRequestStatus,
   removeRequest,
-} from "../redux/slices/requestsSlice";
-import { addNotification } from "../slices/notificationsSlice";
+} from "../slices/requestSlice";
+import { addNotification } from "../slices/notificationSlice";
 
 const { Title } = Typography;
 const { Option } = Select;

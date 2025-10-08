@@ -12,7 +12,7 @@ import FindBlood from "./Pages/FindBlood";
 import RequestBlood from "./Pages/RequestBlood";
 import ManageRequests from "./Pages/ManageRequests";
 import ManageUsers from "./Pages/ManageUsers";
-import Inventory from "./Pages/ManageBloodBanks"; // acts as ManageBloodbanks
+import ManageBloodBanks from "./Pages/ManageBloodBanks"; // acts as ManageBloodbanks
 import History from "./Pages/History";
 import Notifications from "./Pages/Notifications";
 import Analytics from "./Pages/Analytics";

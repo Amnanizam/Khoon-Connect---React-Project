@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Card, Typography, message, Tag } from "antd";
-import { updateRequestStatus } from "../redux/slices/requestsSlice";
-import { addNotification } from "../slices/notificationsSlice";
+import { updateRequestStatus } from "../slices/requestSlice";
+import { addNotification } from "../slices/notificationSlice";
 
 const { Title } = Typography;
 

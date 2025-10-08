@@ -2,8 +2,8 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Table, Tag, Button, Card, Typography, message } from "antd";
-import { updateRequestStatus } from "../slices/requestsSlice";
-import { addNotification } from "../slices/notificationsSlice";
+import { updateRequestStatus } from "../slices/requestSlice";
+import { addNotification } from "../slices/notificationSlice";
 import NavbarDashboard from "../Components/NavbarDashboard";
 
 const { Title } = Typography;

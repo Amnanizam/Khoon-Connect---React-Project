@@ -1,10 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from './slices/authSlice';
-import requestsReducer from "./slices/requestsSlice";
-import donationsReducer from "./slices/donationsSlice";
+import requestsReducer from "./slices/requestSlice";
+import donationsReducer from "./slices/donationSlice";
 import inventoryReducer from "./slices/inventorySlice";
-import usersReducer from "./slices/usersSlice";
-import notificationsReducer from "./slices/notificationsSlice";
+import usersReducer from "./slices/userSlice";
+import notificationsReducer from "./slices/notificationSlice";
+import analyticsReducer from "./slices/analyticsSlice"
 
 
 const store=configureStore({
