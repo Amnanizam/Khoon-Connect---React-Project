@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Card, Row, Col, message, Statistic } from "antd";
 import NavbarDashboard from "../Components/NavbarDashboard";
 import { updateAnalytics } from "../slices/analyticsSlice";
+import { Outlet } from "react-router-dom";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -125,6 +126,7 @@ const Dashboard = () => {
             </Row>
           </Card>
         );
+        
 
       default:
         return (
@@ -169,6 +171,7 @@ const Dashboard = () => {
         </h1>
         {renderRoleContent()}
         {renderNotifications()}
+        <Outlet/>
       </div>
     </div>
   );

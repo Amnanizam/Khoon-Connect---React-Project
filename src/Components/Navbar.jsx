@@ -46,10 +46,10 @@ const Navbar = () => {
         handleClick("/");
         break;
       case "login":
-        handleClick("/FindBlood");
+        handleClick("/Login");
         break;
       case "register":
-        handleClick("/RequestBlood");
+        handleClick("/Register");
         break;
       case "dashboard":
         handleClick("/dashboard");

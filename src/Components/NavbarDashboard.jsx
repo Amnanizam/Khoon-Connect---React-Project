@@ -1,6 +1,5 @@
-// src/Components/NavbarDashboard.jsx
 import React, { useState } from "react";
-import { Layout, Menu, Button, Drawer, Typography } from "antd";
+import { Layout, Menu, Button, Drawer } from "antd";
 import {
   MenuOutlined,
   DashboardOutlined,
@@ -10,72 +9,71 @@ import {
   TeamOutlined,
   DatabaseOutlined,
   BarChartOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../slices/authSlice";
+import logo from "../assets/logo.png";
 
 const { Header } = Layout;
-const { Title } = Typography;
 
 const NavbarDashboard = () => {
   const [open, setOpen] = useState(false);
-  const { role, user } = useSelector((state) => state.auth); // assuming role is stored in Redux
+  const { user } = useSelector((state) => state.auth);
+  const role = user?.role?.toLowerCase() || "";
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Pages according to role
+  // ✅ Role-based pages
   const menuItemsByRole = {
     patient: [
-      { key: "dashboard", label: "Dashboard", 
-        icon: <DashboardOutlined />, path: "/Dashboard" },
-      { key: "requestblood", label: "Request Blood", 
-        icon: <FileTextOutlined />, path: "/RequestBlood" },
-      { key: "myrequests", label: "My Requests", 
-        icon: <HistoryOutlined />, path: "/ManageRequests" },
-      { key: "profile", label: "Profile", 
-        icon: <UserOutlined />, path: "/Profile" },
+      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "requestblood", label: "Request Blood", icon: <FileTextOutlined />, path: "/dashboard/request-blood" },
+      { key: "managerequests", label: "Manage Requests", icon: <HistoryOutlined />, path: "/dashboard/manage-requests" },
+      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
+      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
     ],
+
     donor: [
-      { key: "dashboard", label: "Dashboard", 
-        icon: <DashboardOutlined />, path: "/Dashboard" },
-      { key: "findblood", label: "Find Requests", 
-        icon: <TeamOutlined />, path: "/FindBlood" },
-      { key: "history", label: "My Donations", icon: <HistoryOutlined />, path: "/history" },
-      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/profile" },
+      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "findblood", label: "Find Requests", icon: <TeamOutlined />, path: "/dashboard/find-blood" },
+      { key: "history", label: "My Donations", icon: <HistoryOutlined />, path: "/dashboard/history" },
+      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
+      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
     ],
+
     bloodbank: [
-      { key: "dashboard", label: "Dashboard", 
-        icon: <DashboardOutlined />, path: "/Dashboard" },
-      { key: "inventory", label: "Manage Inventory", 
-        icon: <DatabaseOutlined />, path: "/Manageinventory" },
-      { key: "requests", label: "Incoming Requests", 
-        icon: <FileTextOutlined />, path: "/ManageRequests" },
-      { key: "donations", label: "Donation Records", 
-        icon: <HistoryOutlined />, path: "/History" },
-      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/profile" },
+      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "managerequests", label: "Manage Requests", icon: <FileTextOutlined />, path: "/dashboard/manage-requests" },
+      { key: "managebloodbanks", label: "Manage Blood Banks", icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "notifications", label: "Notifications", icon: <HistoryOutlined />, path: "/dashboard/notifications" },
+      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
     ],
+
     admin: [
-      { key: "dashboard", label: "Dashboard", 
-        icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "users", label: "Manage Users", 
-        icon: <TeamOutlined />, path: "/manageusers" },
-      { key: "banks", label: "Manage Blood Banks", 
-        icon: <DatabaseOutlined />, path: "/managebloodbanks" },
-      { key: "analytics", label: "Reports & Analytics", 
-        icon: <BarChartOutlined />, path: "/Analytics" },
-      { key: "profile", label: "Profile", 
-        icon: <UserOutlined />, path: "/Profile" },
+      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "manageusers", label: "Manage Users", icon: <TeamOutlined />, path: "/dashboard/manage-users" },
+      { key: "managebloodbanks", label: "Manage Blood Banks", icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "analytics", label: "Reports & Analytics", icon: <BarChartOutlined />, path: "/dashboard/analytics" },
+      { key: "notifications", label: "Notifications", icon: <HistoryOutlined />, path: "/dashboard/notifications" },
+      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
     ],
   };
 
-  const menuItems = menuItemsByRole[role?.toLowerCase()] || [];
+  const menuItems = menuItemsByRole[role] || [];
 
   return (
     <Layout className="bg-white">
-      {/* Top Navbar */}
-      <Header className="flex justify-between items-center px-4 bg-red-500">
-        <Title level={3} className="!text-white m-0">
-          Khoon Connect
-        </Title>
+      {/* 🔺 Top Navbar */}
+      <Header className="flex justify-between items-center px-4 !bg-red-300">
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="logo" className="w-20 h-15" />
+          <h3 className="text-3xl font-dancing italic tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-red-900 via-red-900 to-red-900">
+            Zinadgi Ka Rishta Khoon Ke Zariye
+          </h3>
+        </div>
+
         <div className="flex items-center gap-4">
           <span className="text-white">
             {user?.name ? `Hello, ${user.name}` : "Welcome"}
@@ -88,10 +86,10 @@ const NavbarDashboard = () => {
         </div>
       </Header>
 
-      {/* Sidebar Drawer */}
+      {/* 🔹 Sidebar Drawer */}
       <Drawer
-        title={`${role?.toUpperCase()} Menu`}
-        placement="left"
+        title={`${role?.toUpperCase() || "USER"} MENU`}
+        placement="right"
         closable
         onClose={() => setOpen(false)}
         open={open}
@@ -103,7 +101,12 @@ const NavbarDashboard = () => {
             icon: item.icon,
             label: item.label,
             onClick: () => {
-              navigate(item.path);
+              if (item.key === "logout") {
+                dispatch(logout());
+                navigate("/login");
+              } else if (item.path) {
+                navigate(item.path);
+              }
               setOpen(false);
             },
           }))}
