@@ -4,14 +4,14 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Typography } from "antd";
 import Navbar from "../Components/Navbar";
-import donate from "../assets/donate.jpg";
-import giftblood from '../assets/giftblood.jpg'
-import blood2 from '../assets/blood2.jpg'
 
+// available images
+import donate from "../assets/donate.jpg";
+import giftblood2 from "../assets/giftblood2.jpg";
+import blood2 from "../assets/blood2.jpg";
+import logo from "../assets/logo.png"
 
 import { Swiper, SwiperSlide } from "swiper/react";
-
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -20,90 +20,112 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 const { Title, Paragraph } = Typography;
 
 const Home = () => {
-  const { isLoggedIn, role } = useSelector((state) => state.auth);
+  // safe destructure in case state.auth is undefined
+  const { isLoggedIn = false, role = "" } = useSelector((state) => state.auth || {});
   const navigate = useNavigate();
 
+  // Try to load a custom logo. If it doesn't exist, fallback to donate.jpg.
+  // NOTE: `require` works in CRA / webpack setups. If you use Vite, see notes below.
+  let logoSrc = donate;
+  try {
+    const maybe = require("../assets/logo.png");
+    logoSrc = maybe?.default || maybe;
+  } catch (e) {
+    // fallback stays as donate
+    logoSrc = donate;
+  }
+
   return (
-    <div className="relative w-full h-screen">
-      {/* Navbar always on top */}
-      <div className="absolute top-0 left-0 w-full z-20">
-        <Navbar />
+    <div className="relative w-full min-h-screen overflow-hidden">
+      {/* Navbar (hide auth buttons on home) */}
+      <div className="absolute top-0 left-0 w-full z-40">
+        <Navbar hideAuthButtons={true} />
       </div>
 
-      {/* Background slider */}
-      <Swiper
-        spaceBetween={30}
-        centeredSlides
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
-        }}
-        pagination={{ clickable: true }}
-        navigation
-        modules={[Autoplay, Pagination, Navigation]}
-        className="absolute top-10 left-0 w-full h-100 z-0"
-      >
-        <SwiperSlide>
-          <img
-            src={donate}
-            alt="Slide 1"
-            className="w-full h-100 object-cover filter "
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            src={giftblood}
-            alt="Slide 2"
-            className="w-full h-100 object-cover filter"
-          />
-        </SwiperSlide>
-        <SwiperSlide>
-          <img
-            src={blood2}
-            alt="Slide 3"
-            className="w-full h-100 object-cover filter"
-          />
-        </SwiperSlide>
-      </Swiper>
+      {/* Main 3-column centered content */}
+      <div className="relative z-30 flex items-center justify-center h-screen px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center w-full max-w-7xl">
+          
+          {/* LEFT: enlarged Khoon Connect image */}
+          <div className="flex items-center justify-center mt-30">
+            <img
+              src={logo}
+              alt="Khoon Connect"
+              className="w-56 md:w-80 lg:w-96 object-contain shadow-lg rounded-md"
+            />
+          </div>
 
-      {/* Foreground content */}
-      <div 
-      className="relative z-20 flex flex-col items-center justify-center 
-      h-0 text-white">
-        
-        <Card 
-        className="main-h-scrneen max-w-2xl w-full text-center shadow-lg rounded-2xl
-         !bg-red-400 bg-opacity-80 z-20">
-          <Title level={2}>Welcome to Khoon Connect</Title>
-          <Paragraph>
-            Our mission is to connect <b>donors</b> and <b>patients</b> who are
-            in urgent need of blood. Together, we can save lives.
-          </Paragraph>
-
-          {!isLoggedIn ? (
-            <div className="flex justify-center gap-4 mt-6">
-              <Button type="primary" size="large" onClick={() => navigate("/login")}>
-                Login
-              </Button>
-              <Button type="default" size="large" onClick={() => navigate("/register")}>
-                Register
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-6">
-              <Paragraph>
-                You are logged in as <b>{role}</b>.
+          
+          <div className="flex items-center justify-center">
+            <div className="mt-70 w-full max-w-md h-64 md:h-96 
+            rounded-2xl overflow-hidden shadow-xl">
+               
+               <Card className="w-full max-w-md text-center shadow-lg rounded-2xl
+                !bg-red-200 bg-opacity-90">
+              <Title level={2} className="text-gray-900">Welcome to Khoon Connect</Title>
+              <Paragraph className="text-gray-800">
+                Our mission is to connect <b>donors</b> and <b>patients</b> who are
+                in urgent need of blood. Together, we can save lives.
               </Paragraph>
-              <Button
-                type="primary"
-                size="large"
-                onClick={() => navigate("/dashboard")}
-              >
-                Go to Dashboard
-              </Button>
+
+              {!isLoggedIn ? (
+                <div className="flex justify-center gap-4 mt-6">
+                  <Button type="primary" size="large" onClick={() => navigate("/login")}>
+                    Login
+                  </Button>
+                  <Button type="default" size="large" onClick={() => navigate("/register")}>
+                    Register
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <Paragraph>You are logged in as <b>{role}</b>.</Paragraph>
+                  <Button type="primary" size="large" onClick={() => navigate("/dashboard")}>
+                    Go to Dashboard
+                  </Button>
+                </div>
+              )}
+            </Card>
+                
+              
+                
+                
+                  
+                
             </div>
-          )}
-        </Card>
+          </div>
+
+          {/* RIGHT: Welcome + mission + Login/Register */}
+          <div className="flex items-center justify-center">
+            <img src={giftblood2} alt="slide-2" className="w-65 h-88 mt-30" />
+            {/* <Card className="w-full max-w-md text-center shadow-lg rounded-2xl !bg-red-200 bg-opacity-90">
+              <Title level={2} className="text-gray-900">Welcome to Khoon Connect</Title>
+              <Paragraph className="text-gray-800">
+                Our mission is to connect <b>donors</b> and <b>patients</b> who are
+                in urgent need of blood. Together, we can save lives.
+              </Paragraph>
+
+              {!isLoggedIn ? (
+                <div className="flex justify-center gap-4 mt-6">
+                  <Button type="primary" size="large" onClick={() => navigate("/login")}>
+                    Login
+                  </Button>
+                  <Button type="default" size="large" onClick={() => navigate("/register")}>
+                    Register
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <Paragraph>You are logged in as <b>{role}</b>.</Paragraph>
+                  <Button type="primary" size="large" onClick={() => navigate("/dashboard")}>
+                    Go to Dashboard
+                  </Button>
+                </div>
+              )}
+            </Card> */}
+          </div>
+
+        </div>
       </div>
     </div>
   );

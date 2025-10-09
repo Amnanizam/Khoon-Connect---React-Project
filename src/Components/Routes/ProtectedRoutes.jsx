@@ -14,7 +14,7 @@ import {
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png";
+import logo from "../assets/logo.png";
 import { setIsLoggedIn, setUser } from "../../slices/authSlice";
 
 const { Header } = Layout;
@@ -86,8 +86,7 @@ const NavbarDashboard = () => {
   return (
     <Layout className="bg-white">
       <Header className="flex justify-between items-center px-4 !bg-red-500">
-        <div className="flex items-center gap-3 cursor-pointer" 
-        onClick={() => navigate("/dashboard")}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/dashboard")}>
           <img src={logo} alt="logo" className="w-16 h-16" />
           <h3 className="text-xl text-white font-semibold">Khoon Connect</h3>
         </div>
@@ -95,8 +94,7 @@ const NavbarDashboard = () => {
         <div className="flex items-center gap-3">
           <span className="text-white">
             {user?.name ? `Hi, ${user.name}` : "Welcome"}</span>
-          <Button type="text" icon={<MenuOutlined />} 
-          onClick={() => setOpen(true)} className="text-white" />
+          <Button type="text" icon={<MenuOutlined />} onClick={() => setOpen(true)} className="text-white" />
         </div>
       </Header>
 

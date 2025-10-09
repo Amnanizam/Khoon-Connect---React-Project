@@ -1,10 +1,19 @@
 // src/pages/Login.jsx
 import React, { useState } from "react";
-import { Form, Input, Button, Card, Typography, Select, message } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  Card,
+  Typography,
+  Select,
+  Alert,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser, setIsLoggedIn } from "../slices/authSlice";
 import Navbar from "../Components/Navbar";
+import "antd/dist/reset.css"; // ✅ important for Ant Design styling
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -13,56 +22,73 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(""); // 👈 show inline error
 
   const onFinish = (values) => {
     setLoading(true);
+    setErrorMsg(""); // reset previous error
     const { email, password, role } = values;
 
-    // ✅ Retrieve users from localStorage
     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
 
-    // ✅ Match user with email, password, and role
-    const user = storedUsers.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password &&
-        u.role.toLowerCase() === role.toLowerCase()
+    const userByEmail = storedUsers.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
     );
 
-    if (user) {
-      // ✅ Save user info in Redux and localStorage
-      dispatch(setUser(user));
-      dispatch(setIsLoggedIn(true));
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      localStorage.setItem("isLoggedIn", "true");
-
-      message.success(`Welcome back, ${user.name || "User"}! 👋`);
-
-      // ✅ Navigate to dashboard
-      navigate("/dashboard");
-    } else {
-      message.error("Invalid credentials or role mismatch!");
+    if (!userByEmail) {
+      setErrorMsg(" User not found. Please register first.");
+      setLoading(false);
+      return;
     }
 
+    if (userByEmail.password !== password) {
+      setErrorMsg("🔑 Incorrect password. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (userByEmail.role.toLowerCase() !== role.toLowerCase()) {
+      setErrorMsg("⚠️ Role mismatch! Please select the correct role.");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Success login
+    dispatch(setUser(userByEmail));
+    dispatch(setIsLoggedIn(true));
+    localStorage.setItem("currentUser", JSON.stringify(userByEmail));
+    localStorage.setItem("isLoggedIn", "true");
+
+    setErrorMsg(""); // clear any error
+    navigate("/dashboard");
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
-      {/* ✅ Simple Navbar (public view) */}
       <Navbar />
 
       <div className="flex items-center justify-center py-10">
         <Card className="w-[400px] shadow-2xl rounded-2xl border border-gray-200">
-          <Title
-            level={3}
-            className="text-center text-red-600 mb-6 font-semibold"
-          >
+          <Title level={3} className="text-center mb-6 font-semibold">
             Login to <span className="text-red-500">Khoon Connect</span>
           </Title>
 
+          {/* 👇 Inline error alert like your screenshot */}
+          {errorMsg && (
+            <Alert
+              message={errorMsg}
+              type="error"
+              showIcon
+              style={{
+                marginBottom: "16px",
+                backgroundColor: "#fff1f0",
+                border: "1px solid #ffa39e",
+              }}
+            />
+          )}
+
           <Form layout="vertical" onFinish={onFinish}>
-            {/* Role Selection */}
             <Form.Item
               name="role"
               label="Select Role"
@@ -76,7 +102,6 @@ const Login = () => {
               </Select>
             </Form.Item>
 
-            {/* Email */}
             <Form.Item
               name="email"
               label="Email"
@@ -88,7 +113,6 @@ const Login = () => {
               <Input placeholder="Enter your email" />
             </Form.Item>
 
-            {/* Password */}
             <Form.Item
               name="password"
               label="Password"
