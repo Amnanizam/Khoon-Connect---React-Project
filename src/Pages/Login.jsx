@@ -127,7 +127,7 @@ const Login = () => {
                 htmlType="submit"
                 loading={loading}
                 block
-                className="bg-red-500 hover:bg-red-600"
+                className="!bg-red-400 hover:!bg-red-600"
               >
                 Login
               </Button>

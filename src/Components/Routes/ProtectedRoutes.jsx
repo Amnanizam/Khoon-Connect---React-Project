@@ -14,7 +14,7 @@ import {
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png"
 import { setIsLoggedIn, setUser } from "../../slices/authSlice";
 
 const { Header } = Layout;
