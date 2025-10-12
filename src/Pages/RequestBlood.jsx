@@ -1,8 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Form, Input, Select, DatePicker, Button, Card, Typography, message } from "antd";
-import { addRequest } from "../slices/requestSlice";
+
 import { addNotification } from "../slices/notificationSlice";
+import { updateAnalytics } from "../slices/analyticsSlice"; // ✅ Make sure this exists and is imported
+import { addRequestWithAnalytics } from "../slices/requestSlice";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -10,11 +12,17 @@ const { Option } = Select;
 const RequestBlood = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { analytics } = useSelector((state) => state.analytics || {}); // ✅ to read current analytics
   const [form] = Form.useForm();
+
+  const generateRequestId = () => {
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `REQ-${random}`;
+  };
 
   const onFinish = (values) => {
     const newRequest = {
-      id: Date.now(),
+      id: generateRequestId(),
       patientName: user?.name || "Unknown",
       bloodGroup: values.bloodGroup,
       hospital: values.hospital,
@@ -23,13 +31,24 @@ const RequestBlood = () => {
       status: "pending",
     };
 
-    dispatch(addRequest(newRequest));
+    // ✅ 1. Add request to Redux
+    dispatch(addRequestWithAnalytics(newRequest));
+
+    // ✅ 2. Update analytics count
+    dispatch(
+      updateAnalytics({
+        ...analytics,
+        totalRequests: (analytics?.totalRequests || 0) + 1,
+      })
+    );
+
+    // ✅ 3. Add a notification for the patient
     dispatch(
       addNotification({
         id: Date.now(),
-        message: `Blood request submitted for ${values.bloodGroup}`,
+        message: `Your blood request for ${values.bloodGroup} has been submitted.`,
         type: "info",
-        role: "patient", // ✅ ensures it’s visible only for patient notifications
+        role: "patient",
         read: false,
       })
     );

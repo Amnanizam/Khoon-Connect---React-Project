@@ -1,4 +1,6 @@
+// src/Components/NavbarDashboard.jsx
 import React, { useState } from "react";
+import { logout } from "../slices/authSlice";
 import { Layout, Menu, Button, Drawer } from "antd";
 import {
   MenuOutlined,
@@ -13,103 +15,125 @@ import {
 } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../slices/authSlice";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.png"
+import { setIsLoggedIn, setUser } from "../slices/authSlice";
+import { message } from "antd";
 
 const { Header } = Layout;
 
 const NavbarDashboard = () => {
   const [open, setOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
-  const role = user?.role?.toLowerCase() || "";
-  const dispatch = useDispatch();
+  const role = user?.role?.toLowerCase();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // ✅ Role-based pages
+  // 🧭 Role-based menu items
   const menuItemsByRole = {
     patient: [
-      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "requestblood", label: "Request Blood", icon: <FileTextOutlined />, path: "/dashboard/request-blood" },
-      { key: "managerequests", label: "Manage Requests", icon: <HistoryOutlined />, path: "/dashboard/manage-requests" },
-      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
-      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
+      { key: "dashboard", label: "Dashboard", 
+        icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "requestblood", label: "Request Blood", 
+        icon: <FileTextOutlined />, path: "/dashboard/request-blood" },
+      { key: "managerequests", label: "Manage Requests", 
+        icon: <HistoryOutlined />, path: "/dashboard/manage-requests" },
+      { key: "profile", label: "Profile", 
+        icon: <UserOutlined />, path: "/dashboard/profile" },
     ],
-
     donor: [
-      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "findblood", label: "Find Requests", icon: <TeamOutlined />, path: "/dashboard/find-blood" },
-      { key: "history", label: "My Donations", icon: <HistoryOutlined />, path: "/dashboard/history" },
-      { key: "profile", label: "Profile", icon: <UserOutlined />, path: "/dashboard/profile" },
-      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
+      { key: "dashboard", label: "Dashboard", 
+        icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "findblood", label: "Find Blood",
+         icon: <TeamOutlined />, path: "/dashboard/find-blood" },
+      { key: "history", label: "My Donations", 
+        icon: <HistoryOutlined />, path: "/dashboard/history" },
+      { key: "profile", label: "Profile", 
+        icon: <UserOutlined />, path: "/dashboard/profile" },
     ],
-
     bloodbank: [
-      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "managerequests", label: "Manage Requests", icon: <FileTextOutlined />, path: "/dashboard/manage-requests" },
-      { key: "managebloodbanks", label: "Manage Blood Banks", icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
-      { key: "notifications", label: "Notifications", icon: <HistoryOutlined />, path: "/dashboard/notifications" },
-      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
+      { key: "dashboard", label: "Dashboard", 
+        icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "managerequests", label: "Manage Requests",
+         icon: <FileTextOutlined />, path: "/dashboard/manage-requests" },
+      { key: "managebloodbanks", label: "Manage Blood Banks", 
+        icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "profile", label: "Profile", 
+        icon: <UserOutlined />, path: "/dashboard/profile" },
     ],
-
     admin: [
-      { key: "dashboard", label: "Dashboard", icon: <DashboardOutlined />, path: "/dashboard" },
-      { key: "manageusers", label: "Manage Users", icon: <TeamOutlined />, path: "/dashboard/manage-users" },
-      { key: "managebloodbanks", label: "Manage Blood Banks", icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
-      { key: "analytics", label: "Reports & Analytics", icon: <BarChartOutlined />, path: "/dashboard/analytics" },
-      { key: "notifications", label: "Notifications", icon: <HistoryOutlined />, path: "/dashboard/notifications" },
-      { key: "logout", label: "Logout", icon: <LogoutOutlined /> },
+      { key: "dashboard", label: "Dashboard",
+         icon: <DashboardOutlined />, path: "/dashboard" },
+      { key: "manageusers", label: "Manage Users", 
+        icon: <TeamOutlined />, path: "/dashboard/manage-users" },
+      { key: "managebloodbanks", label: "Manage Blood Banks", 
+        icon: <DatabaseOutlined />, path: "/dashboard/manage-bloodbanks" },
+      { key: "analytics", label: "Reports & Analytics", 
+        icon: <BarChartOutlined />, path: "/dashboard/analytics" },
+      { key: "profile", label: "Profile", 
+        icon: <UserOutlined />, path: "/dashboard/profile" },
     ],
   };
 
   const menuItems = menuItemsByRole[role] || [];
 
+  // 🚪 Logout handler
+ const handleLogout = () => {
+  dispatch(logout()); // ✅ clears Redux + localStorage
+  message.success({
+    content: "Logged out successfully!",
+    style: { marginTop: '10vh' }, // show near top
+    duration: 2,
+  });
+
+  setTimeout(() => {
+    navigate("/"); // 👈 use your real home route here
+  }, 500); // small delay ensures Redux updates
+};
+
+
+
   return (
     <Layout className="bg-white">
-      {/* 🔺 Top Navbar */}
-      <Header className="flex justify-between items-center px-4 !bg-red-300">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="logo" className="w-20 h-15" />
-          <h3 className="text-3xl font-dancing italic tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-red-900 via-red-900 to-red-900">
-            Zinadgi Ka Rishta Khoon Ke Zariye
-          </h3>
+      <Header className="flex justify-between items-center px-4 !bg-red-500">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/dashboard")}>
+          <img src={logo} alt="logo" className="w-16 h-16" />
+          <h3 className="text-xl text-white font-semibold">Khoon Connect</h3>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span className="text-white">
-            {user?.name ? `Hello, ${user.name}` : "Welcome"}
-          </span>
-          <Button
-            type="primary"
-            icon={<MenuOutlined />}
-            onClick={() => setOpen(true)}
-          />
+            {user?.name ? `Hi, ${user.name}` : "Welcome"}</span>
+          <Button type="text" icon={<MenuOutlined />} onClick={() => setOpen(true)} className="text-white" />
         </div>
       </Header>
 
-      {/* 🔹 Sidebar Drawer */}
+      {/* Drawer Sidebar */}
       <Drawer
         title={`${role?.toUpperCase() || "USER"} MENU`}
         placement="right"
-        closable
         onClose={() => setOpen(false)}
         open={open}
       >
         <Menu
           mode="inline"
-          items={menuItems.map((item) => ({
-            key: item.key,
-            icon: item.icon,
-            label: item.label,
-            onClick: () => {
-              if (item.key === "logout") {
-                dispatch(logout());
-                navigate("/login");
-              } else if (item.path) {
+          items={[
+            ...menuItems.map((item) => ({
+              key: item.key,
+              icon: item.icon,
+              label: item.label,
+              onClick: () => {
                 navigate(item.path);
-              }
-              setOpen(false);
+                setOpen(false);
+              },
+            })),
+            { type: "divider" },
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Logout",
+              onClick: handleLogout,
             },
-          }))}
+          ]}
         />
       </Drawer>
     </Layout>

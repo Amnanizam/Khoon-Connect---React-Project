@@ -1,3 +1,4 @@
+// src/pages/ManageRequests.jsx
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -11,7 +12,7 @@ import {
   Select,
 } from "antd";
 import {
-  updateRequestStatus,
+  updateRequestStatusWithAnalytics,
   removeRequest,
 } from "../slices/requestSlice";
 import { addNotification } from "../slices/notificationSlice";
@@ -24,20 +25,22 @@ const ManageRequests = () => {
   const { user } = useSelector((state) => state.auth);
   const { requests } = useSelector((state) => state.requests);
 
-  const role = user?.role;
-  const isAdmin = role === "admin";
-  const isBloodBank = role === "bloodbank";
+  const role = user?.role?.toLowerCase();
 
-  // Filter requests based on role (Blood Bank only sees assigned or pending)
-  const visibleRequests = isAdmin
-    ? requests
-    : requests.filter(
-        (r) => r.assignedTo === user?.name || r.status === "pending"
-      );
+  // ✅ Filter requests based on role
+  const visibleRequests =
+    role === "admin"
+      ? requests
+      : role === "patient"
+      ? requests.filter((r) => r.patientName === user?.name)
+      : requests.filter(
+          (r) => r.assignedTo === user?.name || r.status === "pending"
+        );
 
-  // ✅ Handle status change
+  // ✅ Handle status change (analytics auto-update)
   const handleStatusChange = (id, newStatus) => {
-    dispatch(updateRequestStatus({ id, status: newStatus }));
+    dispatch(updateRequestStatusWithAnalytics({ id, status: newStatus }));
+
     dispatch(
       addNotification({
         id: Date.now(),
@@ -46,10 +49,11 @@ const ManageRequests = () => {
         read: false,
       })
     );
+
     message.success(`Request marked as ${newStatus}!`);
   };
 
-  // ✅ Handle deletion (Admin only)
+  // ✅ Handle delete (admin only)
   const handleDelete = (id) => {
     dispatch(removeRequest(id));
     dispatch(
@@ -126,32 +130,39 @@ const ManageRequests = () => {
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <div className="flex gap-2">
-          {/* Change Status Dropdown */}
-          <Select
-            defaultValue={record.status}
-            onChange={(val) => handleStatusChange(record.id, val)}
-            style={{ width: 130 }}
-          >
-            <Option value="pending">Pending</Option>
-            <Option value="accepted">Accepted</Option>
-            <Option value="donated">Donated</Option>
-          </Select>
+      render: (_, record) => {
+        // 🩸 Patients: View only
+        if (role === "patient") {
+          return <i className="text-gray-400">View Only</i>;
+        }
 
-          {/* Delete Button for Admin */}
-          {isAdmin && (
-            <Popconfirm
-              title="Delete this request?"
-              onConfirm={() => handleDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
+        // 🏥 Blood Banks / Admin: Update status
+        return (
+          <div className="flex gap-2">
+            <Select
+              defaultValue={record.status}
+              onChange={(val) => handleStatusChange(record.id, val)}
+              style={{ width: 130 }}
             >
-              <Button danger>Delete</Button>
-            </Popconfirm>
-          )}
-        </div>
-      ),
+              <Option value="pending">Pending</Option>
+              <Option value="accepted">Accepted</Option>
+              <Option value="donated">Donated</Option>
+            </Select>
+
+            {/* 👨‍💼 Delete option for admin only */}
+            {role === "admin" && (
+              <Popconfirm
+                title="Delete this request?"
+                onConfirm={() => handleDelete(record.id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button danger>Delete</Button>
+              </Popconfirm>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -159,7 +170,11 @@ const ManageRequests = () => {
     <div className="p-6 flex justify-center items-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-6xl shadow-lg rounded-2xl">
         <Title level={3} className="text-center mb-4 text-red-500">
-          {isAdmin ? "Manage All Blood Requests" : "Blood Requests Overview"}
+          {role === "admin"
+            ? "Manage All Blood Requests"
+            : role === "patient"
+            ? "Your Blood Requests"
+            : "Blood Requests Overview"}
         </Title>
 
         <Table

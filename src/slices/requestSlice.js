@@ -1,6 +1,7 @@
+// src/slices/requestsSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import { incrementRequest, fulfillRequest } from "./analyticsSlice";
 
-// ✅ Load saved requests from localStorage (if any)
 const savedRequests = JSON.parse(localStorage.getItem("requests")) || [];
 
 const initialState = {
@@ -36,7 +37,21 @@ const requestsSlice = createSlice({
   },
 });
 
-// ✅ Export actions and reducer
+// ✅ Thunks to update analytics simultaneously
+export const addRequestWithAnalytics = (request) => (dispatch) => {
+  dispatch(requestsSlice.actions.addRequest(request));
+  dispatch(incrementRequest());
+};
+
+export const updateRequestStatusWithAnalytics =
+  ({ id, status, donor }) =>
+  (dispatch) => {
+    dispatch(requestsSlice.actions.updateRequestStatus({ id, status, donor }));
+    if (status === "donated" || status === "fulfilled") {
+      dispatch(fulfillRequest());
+    }
+  };
+
 export const { addRequest, updateRequestStatus, removeRequest } =
   requestsSlice.actions;
 

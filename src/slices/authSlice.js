@@ -1,12 +1,14 @@
 // src/slices/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
+
 // Load user data from localStorage
 const storedUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
 const initialState = {
   user: storedUser,
   isLoggedIn: !!storedUser,
+  role: storedUser?.role || null,
 };
 
 const authSlice = createSlice({
@@ -15,6 +17,7 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action) => {
       state.user = action.payload;
+      state.role = action.payload.role;
       state.isLoggedIn = true;
       localStorage.setItem("currentUser", JSON.stringify(action.payload));
     },

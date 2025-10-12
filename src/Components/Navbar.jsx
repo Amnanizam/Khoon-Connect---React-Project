@@ -99,32 +99,7 @@ const Navbar = () => {
             </div>
           </div>
 
-    // <div className="w-full bg-gradient-to-r from-red-300
-    //  via-red-400 to-red-500 rounded-lg text-white">
-    //   <div className="container mx-auto flex justify-between items-center p-4">
-    //     {/* Logo */}
-    //     <span
-    //       className="flex items-center gap-3 text-xl font-bold text-red-600 cursor-pointer"
-    //       onClick={() => handleClick("/")}
-    //     >
-    //       <img src={logo} alt="logo" className="w-20 h-15" />
-    //     </span>
-
-    //     {/* Title */}
-    //     <h3 className="text-3xl font-dancing italic tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-red-900 via-red-900 to-red-900">
-    //       Zinadgi Ka Rishta Khoon Ke Zariye
-    //     </h3>
-
-    //     {/* AntD v5 Menu (items prop) */}
-    //     <Menu
-    //       mode="horizontal"
-    //       selectable={false}
-    //       className="border-0 bg-transparent"
-    //       items={menuItems}
-    //       onClick={onMenuClick}
-    //     />
-    //   </div>
-    // </div>
+    
   );
 };
 

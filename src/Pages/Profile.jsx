@@ -50,7 +50,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavbarDashboard />
+      
       <div className="p-6 flex justify-center items-start mt-10">
         <Card className="w-full max-w-lg shadow-xl rounded-2xl border border-gray-200">
           <Title level={3} className="text-center text-red-600 mb-6">

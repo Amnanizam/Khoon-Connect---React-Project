@@ -20,6 +20,16 @@ const store=configureStore({
 
 
     },
+    
 });
+store.subscribe(() => {
+  const state = store.getState();
+  if (state.auth?.user) {
+    localStorage.setItem("currentUser", JSON.stringify(state.auth.user));
+  } else {
+    localStorage.removeItem("currentUser");
+  }
+});
+
 
 export default store;
